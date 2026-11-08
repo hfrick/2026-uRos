@@ -1,13 +1,9 @@
 project:
   type: website
+  output-dir: docs
 
 website:
-  title: "my uRos title"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+  title: "2026-uRos"
 
 format:
   html:
