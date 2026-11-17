@@ -1,0 +1,415 @@
+[
+  {
+    "objectID": "index.html#budget-participatif",
+    "href": "index.html#budget-participatif",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Budget participatif",
+    "text": "Budget participatif\n\n\n\n\nEvery year since 2014, Parisians propose and vote on projects\nGreening a schoolyard, a new playground, a sports facility, …\nHow long from the vote until the project opens?\n\n\n\n\n\n\n\n\nPhoto by Eric Tompkins on Unsplash\n\n\n\n\ncity tracks every project from studies through to opening"
+  },
+  {
+    "objectID": "index.html#the-data",
+    "href": "index.html#the-data",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "The data",
+    "text": "The data\n\nglimpse(projects)\n#&gt; Rows: 1,375\n#&gt; Columns: 11\n#&gt; $ project        &lt;chr&gt; \"3788\", \"2960\", \"3594\", \"12374\", \"3801\", \"100…\n#&gt; $ months         &lt;dbl&gt; 109.23333, 26.00000, 103.00000, 13.23333, 36.…\n#&gt; $ opened         &lt;lgl&gt; FALSE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, …\n#&gt; $ theme          &lt;chr&gt; \"social\", \"sport\", \"safety\", \"cleanliness\", \"…\n#&gt; $ department     &lt;chr&gt; \"economy\", \"youth and sports\", \"roads\", \"clea…\n#&gt; $ scale          &lt;chr&gt; \"city-wide\", \"arrondissement\", \"arrondissemen…\n#&gt; $ arrondissement &lt;chr&gt; \"several\", \"01\", \"01\", \"several\", \"several\", …\n#&gt; $ priority_share &lt;dbl&gt; 0.1264368, 0.0000000, 0.0000000, 0.0000000, 1…\n#&gt; $ edition        &lt;int&gt; 2017, 2016, 2017, 2025, 2017, 2021, 2018, 202…\n#&gt; $ budget         &lt;dbl&gt; 3500000, 200000, 155000, 120000, 3500000, 200…\n#&gt; $ n_operations   &lt;int&gt; 87, 1, 1, 3, 21, 8, 8, 1, 11, 24, 28, 39, 229…\n\nSource: Ville de Paris, opendata.paris.fr, licence ODbL\n\n\none row per project, editions 2014–2025 (no 2020 edition)\na project counts as open once all of its operations (sites) are open\nmonths: from the vote until opening, or until today if it’s not open yet"
+  },
+  {
+    "objectID": "index.html#not-open-yet",
+    "href": "index.html#not-open-yet",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Not open yet",
+    "text": "Not open yet\n\n\n\neach line: one project, from vote to opening\nopen circle: we stopped watching (today), it hasn’t opened yet\nwe know it’s taken at least this long, not how long it will take"
+  },
+  {
+    "objectID": "index.html#not-open-yet-1",
+    "href": "index.html#not-open-yet-1",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Not open yet",
+    "text": "Not open yet\n\n\n\nalign at the vote: time since vote is what we want to model\ntwo ways to get it wrong:\n\ndrop the unfinished projects: biased towards fast projects\nmodel only “open yet?”: classification, throws away the timing"
+  },
+  {
+    "objectID": "index.html#two-ways-to-get-it-wrong",
+    "href": "index.html#two-ways-to-get-it-wrong",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Two ways to get it wrong",
+    "text": "Two ways to get it wrong\n\n\n\nDrop the projects that aren’t open yet→ waiting times look too short\n\n\nOnly model “open yet or not?”→ classification, throws away the timing"
+  },
+  {
+    "objectID": "index.html#censored-regression",
+    "href": "index.html#censored-regression",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Censored regression",
+    "text": "Censored regression\n\nNot plain regression, not classification: censored regression\nSurvival analysis is the tool for it, even if the event isn’t death\n\nFirms closing (business demography)\nLeaving unemployment or benefits\nA household responding during fieldwork\n\n\n\n\nprojects &lt;- projects |&gt;\n  mutate(opening_time = Surv(months, opened))\n\n\n#&gt; [1] 109.23333+  26.00000  103.00000   13.23333+  36.00000   61.23333+\n#&gt; [7]  23.00000   37.23333+\n\n\n\n+ marks a censored observation: at least this many months"
+  },
+  {
+    "objectID": "index.html#a-first-look",
+    "href": "index.html#a-first-look",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "A first look",
+    "text": "A first look\n\n\n\nKaplan-Meier curves: share of projects still waiting, accounting for censoring\nbigger projects take longer to open"
+  },
+  {
+    "objectID": "index.html#tidymodels-for-time-to-event-data",
+    "href": "index.html#tidymodels-for-time-to-event-data",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "tidymodels for time-to-event data",
+    "text": "tidymodels for time-to-event data\n      \n\n\n\n\nframework for the whole modelling workflow: splitting, preprocessing, models, metrics, tuning\nconsistent interfaces, guardrails against pitfalls such as data leakage\nrecipes: declarative preprocessing, like weightflow and samplyr in this programme\nsurvival analysis supported across the whole framework"
+  },
+  {
+    "objectID": "index.html#data-splitting-and-preprocessing",
+    "href": "index.html#data-splitting-and-preprocessing",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Data splitting and preprocessing",
+    "text": "Data splitting and preprocessing\n\nset.seed(403)\nprojects_split &lt;- initial_split(projects, prop = 0.8)\nprojects_train &lt;- training(projects_split)\nprojects_folds &lt;- vfold_cv(projects_train, v = 10)\n\n\n\nprojects_rec &lt;- recipe(opening_time ~ ., data = projects_train) |&gt;\n  update_role(project, new_role = \"id\") |&gt;\n  step_log(budget, n_operations) |&gt;\n  step_other(arrondissement, theme, threshold = 0.02)\n\n\n\nnothing survival-specific here, except the response is a Surv object"
+  },
+  {
+    "objectID": "index.html#a-model-for-censored-regression",
+    "href": "index.html#a-model-for-censored-regression",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "A model for censored regression",
+    "text": "A model for censored regression\n\n\nRegression\n\nlinear_reg() |&gt;\n  set_engine(\"lm\") |&gt;\n  set_mode(\"regression\")\n\n\nCensored regression\n\ncox_spec &lt;- proportional_hazards() |&gt;\n  set_engine(\"survival\") |&gt;\n  set_mode(\"censored regression\")\n\n\n\n\ncox_fit &lt;- workflow(projects_rec, cox_spec) |&gt;\n  fit(data = projects_train)\n\n\n\nsame code as for regression; only the mode and the response differ"
+  },
+  {
+    "objectID": "index.html#two-new-engines-for-random-forests",
+    "href": "index.html#two-new-engines-for-random-forests",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Two new engines for random forests",
+    "text": "Two new engines for random forests\n\nranger_spec &lt;- rand_forest(trees = 500) |&gt;\n  set_engine(\"ranger\") |&gt;\n  set_mode(\"censored regression\")\n\nrfsrc_spec &lt;- rand_forest(trees = 500) |&gt;\n  set_engine(\"randomForestSRC\") |&gt;\n  set_mode(\"censored regression\")\n\n\n\nswitching model type or engine is one line\nwhy these? they are fast\nwhy random forests? generally work well out of the box\nbut also: why tree-based models? censored has quite a few of those!\ncensored smooths over engine quirks, e.g. randomForestSRC’s 0/1 status coding and pre-made Surv responses in recipes"
+  },
+  {
+    "objectID": "index.html#what-does-a-tree-do-with-survival-curves",
+    "href": "index.html#what-does-a-tree-do-with-survival-curves",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "What does a tree do with survival curves?",
+    "text": "What does a tree do with survival curves?\n\n\n\nOPTIONAL slide\neach leaf holds a survival curve, not a single number\na forest averages many such trees"
+  },
+  {
+    "objectID": "index.html#a-null-model-as-a-baseline",
+    "href": "index.html#a-null-model-as-a-baseline",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "A null model as a baseline",
+    "text": "A null model as a baseline\n\nnull_spec &lt;- null_model() |&gt;\n  set_engine(\"survival\") |&gt;\n  set_mode(\"censored regression\")\n\n\nIgnores all predictors: one Kaplan-Meier curve for everyone\nDoes your model beat doing nothing?"
+  },
+  {
+    "objectID": "index.html#faster-tuning-for-boosted-trees",
+    "href": "index.html#faster-tuning-for-boosted-trees",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Faster tuning for boosted trees",
+    "text": "Faster tuning for boosted trees\n\nboost_tree(trees = 200) |&gt;\n  set_engine(\"mboost\") |&gt;\n  set_mode(\"censored regression\") |&gt;\n  fit(opening_time ~ ., data = projects_train) |&gt;\n  multi_predict(new_data, type = \"survival\", eval_time = 12, trees = c(50, 100, 200))\n\n\nFit once, predict for many numbers of trees\ntune_grid() uses it automatically\n\n\n\nin the censored blog post example: about 3x faster\nlearn_rate is now tunable too"
+  },
+  {
+    "objectID": "index.html#many-models-at-once",
+    "href": "index.html#many-models-at-once",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Many models at once",
+    "text": "Many models at once\n\nprojects_res &lt;- workflow_set(\n  preproc = list(rec = projects_rec),\n  models = list(\n    null = null_spec,\n    cox = cox_spec,\n    ranger = ranger_spec,\n    rfsrc = rfsrc_spec\n  )\n) |&gt;\n  workflow_map(\n    \"fit_resamples\",\n    resamples = projects_folds,\n    metrics = projects_metrics,\n    eval_time = 1:96,\n    seed = 1\n  )\n\n\n\nwe take care of the procedural code, again: 4 models × 10 folds\nyou focus on the modelling choices: preprocessing, models, metrics\nlink to production: a short declarative specification instead of hand-written loops\neasier to review, easy to rerun when next year’s data arrives\nauditable, reproducible, same code gives same results"
+  },
+  {
+    "objectID": "index.html#predictions-are-survival-curves",
+    "href": "index.html#predictions-are-survival-curves",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Predictions are survival curves",
+    "text": "Predictions are survival curves\n\n\n\nOPTIONAL slide\none curve per project, from the best model\nall from the same edition, so the differences come from theme and budget"
+  },
+  {
+    "objectID": "index.html#metrics-at-chosen-points-in-time",
+    "href": "index.html#metrics-at-chosen-points-in-time",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Metrics at chosen points in time",
+    "text": "Metrics at chosen points in time\n\nprojects_metrics &lt;- metric_set(\n  brier_survival, brier_survival_integrated, concordance_survival\n)\n\nprojects_res &lt;- projects_wflows |&gt;\n  workflow_map(\n    \"fit_resamples\",\n    resamples = projects_folds,\n    metrics = projects_metrics,\n    eval_time = 1:96,\n    seed = 1\n  )\n\n\n\nevery month for the first 8 years\nnot longer: only the earliest editions are followed up beyond that, so estimates get noisy\nBrier score: how close the predicted probability is to what happened, at time t (lower is better)\nconcordance: do projects that open sooner get shorter predicted times?"
+  },
+  {
+    "objectID": "index.html#every-model-beats-the-baseline",
+    "href": "index.html#every-model-beats-the-baseline",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Every model beats the baseline",
+    "text": "Every model beats the baseline\n\n\n\nranger: The cause is ranger’s default minimum node size of 3 for survival forests. Tiny terminal nodes keep survival curves flat at high values in the tail."
+  },
+  {
+    "objectID": "index.html#ranking-the-models",
+    "href": "index.html#ranking-the-models",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Ranking the models",
+    "text": "Ranking the models\n\nrank_results(projects_res, rank_metric = \"brier_survival_integrated\") |&gt;\n  filter(.metric == \"brier_survival_integrated\") |&gt;\n  select(wflow_id, rank, mean)\n#&gt; # A tibble: 8 × 3\n#&gt;   wflow_id     rank  mean\n#&gt;   &lt;chr&gt;       &lt;int&gt; &lt;dbl&gt;\n#&gt; 1 rec_orsf        1 0.148\n#&gt; 2 rec_mboost      2 0.153\n#&gt; 3 rec_rfsrc       3 0.153\n#&gt; 4 rec_tree        4 0.156\n#&gt; 5 rec_cox         5 0.158\n#&gt; 6 rec_weibull     6 0.158\n#&gt; 7 rec_ranger      7 0.160\n#&gt; 8 rec_null        8 0.181"
+  },
+  {
+    "objectID": "index.html#what-the-model-says",
+    "href": "index.html#what-the-model-says",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "What the model says",
+    "text": "What the model says\n\n\n\nCox model, fitted on the training data\nbigger budgets and more recent editions are associated with longer waits\nsport, mobility, school projects open faster\nphrase as “associated with”, not causes\nNOTE: methodologists may question the edition effect (recent editions heavily censored, short follow-up)"
+  },
+  {
+    "objectID": "index.html#models-and-metrics-are-open-for-extension",
+    "href": "index.html#models-and-metrics-are-open-for-extension",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Models and metrics are open for extension",
+    "text": "Models and metrics are open for extension\n\nA user wanted to write their own metrics on the linear predictor\n\ne.g., Royston and Sauerbrei’s D\n\nThat needed a new metric type\n\n\n\n\n\n\n\n\n\n\nMetric type\nPrediction\nExample\n\n\n\n\nstatic\nsurvival time\nconcordance\n\n\ndynamic\nsurvival probability at time t\nBrier score\n\n\nintegrated\nsurvival probability across times\nintegrated Brier score\n\n\nlinear predictor\nlinear predictor\nRoyston-Sauerbrei\n\n\n\n\n\nyardstick #551 and parsnip #1371: both from the same user"
+  },
+  {
+    "objectID": "index.html#write-your-own-roystons-d",
+    "href": "index.html#write-your-own-roystons-d",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Write your own: Royston’s D",
+    "text": "Write your own: Royston’s D\n\nroyston_d_vec &lt;- function(truth, estimate, ...) {\n  # parsnip's linear predictor increases with time: flip to a risk score\n  n &lt;- length(estimate)\n  scores &lt;- qnorm((rank(-estimate) - 3 / 8) / (n + 1 / 4))\n  beta &lt;- coef(survival::coxph(truth ~ scores))\n  unname(beta * sqrt(8 / pi))\n}\n\nroyston_d &lt;- function(data, ...) UseMethod(\"royston_d\")\nroyston_d &lt;- new_linear_pred_survival_metric(royston_d, direction = \"maximize\")\n\nroyston_d.data.frame &lt;- function(data, truth, estimate, ...) {\n  linear_pred_survival_metric_summarizer(\n    name = \"royston_d\", fn = royston_d_vec, data = data,\n    truth = !!enquo(truth), estimate = !!enquo(estimate)\n  )\n}\n\n\n\nsimplified: the real thing also handles missing values and case weights\nyardstick also ships it: royston_survival()"
+  },
+  {
+    "objectID": "index.html#use-it-like-any-other-metric",
+    "href": "index.html#use-it-like-any-other-metric",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Use it like any other metric",
+    "text": "Use it like any other metric\n\nworkflow(projects_rec, cox_spec) |&gt;\n  fit_resamples(\n    projects_folds,\n    metrics = metric_set(royston_survival, royston_d)\n  ) |&gt;\n  collect_metrics()\n#&gt; # A tibble: 2 × 6\n#&gt;   .metric          .estimator  mean     n std_err .config        \n#&gt;   &lt;chr&gt;            &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;          \n#&gt; 1 royston_d        standard   1.52     10  0.0678 pre0_mod0_post0\n#&gt; 2 royston_survival standard   0.355    10  0.0205 pre0_mod0_post0\n\n\n\nOPTIONAL slide\nneeds a linear predictor: Cox, Weibull, boosted tree, but not the forests or the null model\nroyston_survival() reports R²_D, the explained-variation version of D"
+  },
+  {
+    "objectID": "index.html#easier-access-to-censoring-weights",
+    "href": "index.html#easier-access-to-censoring-weights",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Easier access to censoring weights",
+    "text": "Easier access to censoring weights\n\ncox_parsnip_fit &lt;- cox_spec |&gt;\n  fit(opening_time ~ budget + theme + edition, data = projects_train)\n\npred &lt;- predict(\n  cox_parsnip_fit,\n  testing(projects_split),\n  type = \"survival\",\n  eval_time = c(12, 24, 36),\n  add_censoring_weights = TRUE\n)\npred$.pred[[1]] |&gt;\n  select(.eval_time, .pred_survival, .weight_censored)\n#&gt; # A tibble: 3 × 3\n#&gt;   .eval_time .pred_survival .weight_censored\n#&gt;        &lt;dbl&gt;          &lt;dbl&gt;            &lt;dbl&gt;\n#&gt; 1         12          0.808             1   \n#&gt; 2         24          0.476             1.10\n#&gt; 3         36          0.243             1.25\n\n\n\ndynamic metrics (Brier, ROC AUC) need inverse probability of censoring weights\naugment() already added them, predict() didn’t\nso predict() |&gt; bind_cols() |&gt; metric() worked for concordance but failed for dynamic metrics\nseparate from the linear predictor work, not needed for Royston’s D"
+  },
+  {
+    "objectID": "index.html#the-same-pipeline-for-every-metric",
+    "href": "index.html#the-same-pipeline-for-every-metric",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "The same pipeline for every metric",
+    "text": "The same pipeline for every metric\n\npred |&gt;\n  bind_cols(testing(projects_split)) |&gt;\n  brier_survival(opening_time, .pred)\n#&gt; # A tibble: 3 × 4\n#&gt;   .metric        .estimator .eval_time .estimate\n#&gt;   &lt;chr&gt;          &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;\n#&gt; 1 brier_survival standard           12    0.0480\n#&gt; 2 brier_survival standard           24    0.158 \n#&gt; 3 brier_survival standard           36    0.221"
+  },
+  {
+    "objectID": "index.html#custom-engines",
+    "href": "index.html#custom-engines",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Custom engines",
+    "text": "Custom engines\n\nSame idea: register your own engine with parsnip\nhttps://www.tidymodels.org/learn/develop/models/"
+  },
+  {
+    "objectID": "index.html#durations-with-unfinished-cases",
+    "href": "index.html#durations-with-unfinished-cases",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Durations with unfinished cases?",
+    "text": "Durations with unfinished cases?\n\nCensored regression in tidymodels works just like classification or regression\nIf something is missing, you can extend the framework, or ask us\n\n\n\nhttps://www.tidymodels.org"
+  },
+  {
+    "objectID": "index.html#case-weights-and-survey-weights",
+    "href": "index.html#case-weights-and-survey-weights",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Case weights and survey weights",
+    "text": "Case weights and survey weights\n\n\n\n\n\n\n\n\n\n\nmodel\nwith case weights\nwithout\n\n\n\n\nproportional_hazards()\nsurvival, glmnet\n\n\n\nsurvival_reg()\nsurvival, flexsurv, flexsurvspline\n\n\n\ndecision_tree()\nrpart, partykit\n\n\n\nbag_tree()\n\nrpart\n\n\nboost_tree()\n\nmboost\n\n\nrand_forest()\npartykit, aorsf, ranger, randomForestSRC\n\n\n\n\n\n\n\n\ncensored 0.4.0: bag_tree() with rpart and boost_tree() with mboost no longer accept case weights\nipred errors with weights; mboost fits with weights but can’t predict from those fits"
+  },
+  {
+    "objectID": "index.html#coming-from-sas",
+    "href": "index.html#coming-from-sas",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Coming from SAS",
+    "text": "Coming from SAS\n\n\n\nSAS\nR/tidymodels\n\n\n\n\nPROC LIFETEST\nsurvival::survfit(), null_model()\n\n\nPROC PHREG\nproportional_hazards()\n\n\nPROC LIFEREG\nsurvival_reg()\n\n\n\n\n\nsame models, different defaults: PHREG uses Breslow for ties (R: Efron), LIFETEST uses log-log CIs (R: log)"
+  },
+  {
+    "objectID": "index.html#operations-vs-projects",
+    "href": "index.html#operations-vs-projects",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Operations vs projects",
+    "text": "Operations vs projects\n\nA project can have many operations (sites), from 1 up to more than 200\nAt the operation level, operations are grouped within projects\n\nSplit by project: group_initial_validation_split(group = project)\n\nConcordance is lower there: about 0.63"
+  },
+  {
+    "objectID": "index.html#abandoned-projects",
+    "href": "index.html#abandoned-projects",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Abandoned projects",
+    "text": "Abandoned projects\n\nAbout 5% of operations are abandoned: they will never open\nThat’s a competing risk; here we dropped them"
+  },
+  {
+    "objectID": "index.html#data-caveats",
+    "href": "index.html#data-caveats",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Data caveats",
+    "text": "Data caveats\n\nOpening dates are given to the month\nThe vote is approximated as 1 October of the edition year\nSource: Ville de Paris, Budget participatif : opérations des projets gagnants et réalisations, opendata.paris.fr, licence ODbL"
+  },
+  {
+    "objectID": "index.html#time-to-event",
+    "href": "index.html#time-to-event",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Time to event",
+    "text": "Time to event\n\n\n\nwe know it’s taken at least this long, not how long it will take"
+  },
+  {
+    "objectID": "index.html#everything-is-an-event",
+    "href": "index.html#everything-is-an-event",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Everything is an event?",
+    "text": "Everything is an event?\n\nUse the observed time as if every project had opened→ underestimates the time until opening\n\n\nplain regression on the observed time\nthe projects still waiting are treated as if they opened today"
+  },
+  {
+    "objectID": "index.html#drop-the-ones-still-waiting",
+    "href": "index.html#drop-the-ones-still-waiting",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Drop the ones still waiting?",
+    "text": "Drop the ones still waiting?\n\nOnly use projects that have opened→ throws away data, and biased: the slow ones are the ones still waiting\n\n\nnot missing at random\nhere: almost 40% are not open yet!\nespecially recent editions would be left with only their fastest projects"
+  },
+  {
+    "objectID": "index.html#survival-analysis",
+    "href": "index.html#survival-analysis",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Survival analysis",
+    "text": "Survival analysis\n\nThe right tool for censored regression\nDespite the name, the event can be loads of things:\n\nA project opening\nA business closing\nLeaving unemployment or benefits\nA household responding during fieldwork"
+  },
+  {
+    "objectID": "index.html#kaplan-meier-curve",
+    "href": "index.html#kaplan-meier-curve",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Kaplan-Meier curve",
+    "text": "Kaplan-Meier curve\n\n\n\nTime = Months since the vote\nSurvival prob = prob the project is not yet open\nticks: censored projects, they count as “still waiting” up until they leave the data"
+  },
+  {
+    "objectID": "index.html#tidymodels",
+    "href": "index.html#tidymodels",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "tidymodels",
+    "text": "tidymodels\n      \n\n\na framework for statistical modelling and machine learning\nwe take care of the procedural code / boilerplate, so you can focus on the modelling question\nconsistent interfaces make it easy to explore options: models, preprocessing, metrics, tuning\nguardrails against pitfalls such as data leakage make it safe\n(click) censored: survival analysis across the whole framework"
+  },
+  {
+    "objectID": "index.html#setting-up",
+    "href": "index.html#setting-up",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Setting up",
+    "text": "Setting up\n\nprojects &lt;- projects |&gt;\n  mutate(opening_time = Surv(months, opened), .keep = \"unused\")\n\nset.seed(403)\nprojects_split &lt;- initial_split(projects, prop = 0.8)\nprojects_train &lt;- training(projects_split)\nprojects_folds &lt;- vfold_cv(projects_train, v = 10)\n\nprojects_rec &lt;- recipe(opening_time ~ ., data = projects_train) |&gt;\n  update_role(project, new_role = \"id\") |&gt;\n  step_log(budget, n_operations) |&gt;\n  step_other(arrondissement, theme, threshold = 0.02)\n\ncox_spec &lt;- proportional_hazards() |&gt;\n  set_engine(\"survival\") |&gt;\n  set_mode(\"censored regression\")"
+  },
+  {
+    "objectID": "index.html#survival-trees",
+    "href": "index.html#survival-trees",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Survival trees",
+    "text": "Survival trees\n\n\n\na forest averages many such trees\neach leaf holds a survival curve, not a single number\nflexible: no proportional hazards assumption\ndata-driven groupings"
+  },
+  {
+    "objectID": "index.html#a-null-model-as-your-true-baseline",
+    "href": "index.html#a-null-model-as-your-true-baseline",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "A null model as your true baseline",
+    "text": "A null model as your true baseline\n\nnull_spec &lt;- null_model() |&gt;\n  set_engine(\"survival\") |&gt;\n  set_mode(\"censored regression\")\n\n\nIgnores all predictors: one Kaplan-Meier curve for everyone\nDoes your model beat doing nothing?"
+  },
+  {
+    "objectID": "index.html#the-same-prediction-for-everyone",
+    "href": "index.html#the-same-prediction-for-everyone",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "The same prediction for everyone",
+    "text": "The same prediction for everyone\n\nnull_wflow &lt;- workflow(projects_rec, null_spec)\nnull_fit &lt;- fit(null_wflow, data = projects_train)\n\npredict(null_fit, slice(testing(projects_split), 1:3), type = \"time\")\n#&gt; # A tibble: 3 × 1\n#&gt;   .pred_time\n#&gt;        &lt;dbl&gt;\n#&gt; 1         46\n#&gt; 2         46\n#&gt; 3         46\n\n\n\nthree different projects, same predicted time: the median of the Kaplan-Meier curve"
+  },
+  {
+    "objectID": "index.html#resampling-the-null-model",
+    "href": "index.html#resampling-the-null-model",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Resampling the null model",
+    "text": "Resampling the null model\n\nnull_wflow &lt;- workflow(projects_rec, null_spec)\n\nprojects_metrics &lt;- metric_set(\n  brier_survival,\n  brier_survival_integrated,\n  concordance_survival\n)\n\nnull_res &lt;- fit_resamples(\n  null_wflow,\n  resamples = projects_folds,\n  metrics = projects_metrics,\n  eval_time = 1:96\n)\n\n\n\nwe take care of the procedural code: 10 fits, predictions on the held-out folds, metrics at 96 time points, collected for you\nBrier score: how close the predicted probability is to what happened, at time t (lower is better)\nevery month for the first 8 years; longer than that, only the earliest editions are followed up and estimates get noisy"
+  },
+  {
+    "objectID": "index.html#the-baseline",
+    "href": "index.html#the-baseline",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "The baseline",
+    "text": "The baseline\n\n\n\nthe Brier score of the null model over time\nlow at first: almost no project opens in the first months, easy to predict\npeaks when it’s hardest to tell who’s still waiting"
+  },
+  {
+    "objectID": "index.html#the-final-model",
+    "href": "index.html#the-final-model",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "The final model",
+    "text": "The final model\n\nbest_id &lt;- rank_results(\n  projects_res,\n  rank_metric = \"brier_survival_integrated\"\n) |&gt;\n  slice_head(n = 1) |&gt;\n  pull(wflow_id)\n\nfinal_fit &lt;- projects_res |&gt;\n  extract_workflow(best_id) |&gt;\n  last_fit(projects_split, metrics = projects_metrics, eval_time = 1:96)\n\n\n\nOPTIONAL slide\nrank by integrated Brier score, take the best workflow\nlast_fit(): fit on all of the training data, evaluate once on the test data"
+  },
+  {
+    "objectID": "index.html#built-to-be-extended-1",
+    "href": "index.html#built-to-be-extended-1",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Built to be extended",
+    "text": "Built to be extended\n     \n\n     \n\n\nwe have extended the core packages ourselves: spatialsample, recipes extensions, parsnip extensions, workflowsets, finetune\nnot much for yardstick so far"
+  },
+  {
+    "objectID": "index.html#new-in-yardstick-a-metric-type-for-the-linear-predictor",
+    "href": "index.html#new-in-yardstick-a-metric-type-for-the-linear-predictor",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "New in yardstick: a metric type for the linear predictor",
+    "text": "New in yardstick: a metric type for the linear predictor\n\n\n\n\n\n\n\n\nMetric type\nPrediction\nExample\n\n\n\n\nstatic\nsurvival time\nconcordance\n\n\ndynamic\nsurvival probability at time t\nBrier score\n\n\nintegrated\nsurvival probability across times\nintegrated Brier score\n\n\nlinear predictor\nlinear predictor\nRoyston-Sauerbrei\n\n\n\n\n\na user wanted to write their own metrics on the linear predictor, which needed a new metric type\nthey also wanted Royston and Sauerbrei’s metric, so we added that as well"
+  },
+  {
+    "objectID": "index.html#roystons-metric",
+    "href": "index.html#roystons-metric",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Royston’s metric",
+    "text": "Royston’s metric\n\nworkflow(projects_rec, cox_spec) |&gt;\n  fit_resamples(\n    projects_folds,\n    metrics = metric_set(royston_survival, concordance_survival)\n  ) |&gt;\n  collect_metrics()\n#&gt; # A tibble: 2 × 6\n#&gt;   .metric              .estimator  mean     n std_err .config        \n#&gt;   &lt;chr&gt;                &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;          \n#&gt; 1 concordance_survival standard   0.736    10  0.0107 pre0_mod0_post0\n#&gt; 2 royston_survival     standard   0.355    10  0.0205 pre0_mod0_post0\n\n\n\nhow well the linear predictor separates the projects\nmixes with existing metric types in the same metric set\nneeds a linear predictor: Cox, Weibull, boosted tree, but not the forests or the null model\nroyston_survival() reports R²_D, the explained-variation version of D"
+  },
+  {
+    "objectID": "index.html#build-your-own",
+    "href": "index.html#build-your-own",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Build your own",
+    "text": "Build your own\n\nDeveloper articles on tidymodels.orghttps://www.tidymodels.org/learn/#category=developer%20tools\nChecklists for new engines and new recipe stepshttps://parsnip.tidymodels.org/articles/checklists.htmlhttps://recipes.tidymodels.org/articles/checklists.html\nClaude Code skills for tidymodels developmenthttps://skills.tidymodels.org"
+  },
+  {
+    "objectID": "index.html#whats-new",
+    "href": "index.html#whats-new",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "What’s new",
+    "text": "What’s new\n\nRandom forests via \"ranger\" and \"randomForestSRC\"\nA null model as a baseline\nA new metric type for the linear predictor, and Royston-Sauerbrei’s metric\nAlso new: faster tuning for boosted trees, censoring weights in predict()\n\n\n\n\n\nboosted trees with mboost: multi_predict(), so tune_grid() fits one model per number of trees"
+  },
+  {
+    "objectID": "index.html#built-to-be-extended",
+    "href": "index.html#built-to-be-extended",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Built to be extended",
+    "text": "Built to be extended\n     \n\n     \n\n\nwe have extended the core packages ourselves: spatialsample, recipes extensions, parsnip extensions, workflowsets, finetune\nnot much for yardstick so far"
+  },
+  {
+    "objectID": "index.html#predicting-survival-probabilities",
+    "href": "index.html#predicting-survival-probabilities",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Predicting survival probabilities",
+    "text": "Predicting survival probabilities\n\nnull_pred &lt;- predict(\n  null_fit,\n  slice(testing(projects_split), 1:3),\n  type = \"survival\",\n  eval_time = c(12, 24, 36, 48)\n)\nnull_pred$.pred[[1]]\n#&gt; # A tibble: 4 × 2\n#&gt;   .eval_time .pred_survival\n#&gt;        &lt;dbl&gt;          &lt;dbl&gt;\n#&gt; 1         12          0.92 \n#&gt; 2         24          0.752\n#&gt; 3         36          0.586\n#&gt; 4         48          0.472\n\n\n\nprobability of not being open yet, at chosen points in time (here every year)\none tibble per project, nested in .pred: still one row per project\nthe same for every project with the null model\nthis is the type of prediction the Brier score works with"
+  },
+  {
+    "objectID": "index.html#we-extend",
+    "href": "index.html#we-extend",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "We extend",
+    "text": "We extend\n     \n\n     \n\n\ntidymodels is built to be extended\nwe have extended the core packages ourselves: spatialsample, recipes extensions, parsnip extensions, workflowsets, finetune\nnot much for yardstick so far"
+  },
+  {
+    "objectID": "index.html#you-extend",
+    "href": "index.html#you-extend",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "You extend",
+    "text": "You extend\n\nDeveloper articles on tidymodels.orghttps://www.tidymodels.org/learn/#category=developer%20tools\nChecklists for new engines and new recipe stepshttps://parsnip.tidymodels.org/articles/checklists.htmlhttps://recipes.tidymodels.org/articles/checklists.html\nClaude Code skills for tidymodels developmenthttps://skills.tidymodels.org\n\n\n\nyou can build your own: models, engines, recipe steps, metrics\nwe’ve written down how"
+  },
+  {
+    "objectID": "index.html#something-missing-ask-us",
+    "href": "index.html#something-missing-ask-us",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Something missing? Ask us!",
+    "text": "Something missing? Ask us!\n\n\n\n\n\n\n→ yardstick: a new metric type for the linear predictor, and royston_survival()\n\n\na user wanted to write their own metrics on the linear predictor\nthat wasn’t possible: no metric type triggered that kind of prediction\nthey asked, we built it\nthey also wanted Royston and Sauerbrei’s metric, so we added that as well\nthe same user also asked for easier access to censoring weights in predict() (parsnip #1371)"
+  },
+  {
+    "objectID": "index.html#you-extend-developer-articles",
+    "href": "index.html#you-extend-developer-articles",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "You extend: developer articles",
+    "text": "You extend: developer articles\n\n\n\n\n\nhttps://www.tidymodels.org/learn/#category=developer%20tools\n\n\nyou can build your own: models, engines, recipe steps, metrics, tidiers\nwe’ve written down how: tidymodels.org, Learn, developer tools"
+  },
+  {
+    "objectID": "index.html#you-extend-checklists",
+    "href": "index.html#you-extend-checklists",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "You extend: checklists",
+    "text": "You extend: checklists\n\n\n\n\n\nhttps://parsnip.tidymodels.org/articles/checklists.html\n\n\nthe checklists we use ourselves, for new models and engines\nin the Articles menu of the parsnip website\nrecipes has one for new steps: https://recipes.tidymodels.org/articles/checklists.html"
+  },
+  {
+    "objectID": "index.html#you-extend-skills",
+    "href": "index.html#you-extend-skills",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "You extend: skills",
+    "text": "You extend: skills\n\n\n\n\n\nhttps://skills.tidymodels.org\n\n\nClaude Code skills for tidymodels: for using it, and for creating extensions following our practices"
+  },
+  {
+    "objectID": "index.html#case-weights",
+    "href": "index.html#case-weights",
+    "title": "What’s new for time-to-event data in tidymodels",
+    "section": "Case weights",
+    "text": "Case weights\n\n\n\n\n\n\n\n\n\n\nmodel\nwith case weights\nwithout\n\n\n\n\nproportional_hazards()\nsurvival, glmnet\n\n\n\nsurvival_reg()\nsurvival, flexsurv, flexsurvspline\n\n\n\ndecision_tree()\nrpart, partykit\n\n\n\nbag_tree()\n\nrpart\n\n\nboost_tree()\n\nmboost\n\n\nrand_forest()\npartykit, aorsf, ranger, randomForestSRC\n\n\n\n\n\n\n\n\ncensored 0.4.0: bag_tree() with rpart and boost_tree() with mboost no longer accept case weights\nipred errors with weights; mboost fits with weights but can’t predict from those fits"
+  }
+]
