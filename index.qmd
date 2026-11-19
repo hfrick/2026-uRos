@@ -112,6 +112,7 @@ swimmer_plot <- function(data) {
 
 ```{r}
 #| label: swimmer
+#| fig-alt: "Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. Six projects end in a filled dot where they opened. The other six run up to a dashed line marking today and end in an open circle: they are not open yet."
 #| echo: false
 #| fig-width: 11
 #| fig-height: 5.5
@@ -131,6 +132,7 @@ swimmers |>
 
 ```{r}
 #| label: swimmer-all-events
+#| fig-alt: "Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. All twelve end in a filled dot as if they had opened, including the six that are still waiting and whose lines stop at the dashed line marking today."
 #| echo: false
 #| fig-width: 11
 #| fig-height: 5.5
@@ -150,6 +152,7 @@ Use the observed time as if every project had opened<br>→ underestimates the t
 
 ```{r}
 #| label: swimmer-drop
+#| fig-alt: "Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. The six projects that have opened are shown in full. The six still waiting, which have the longest lines, are faded out."
 #| echo: false
 #| fig-width: 11
 #| fig-height: 5.5
@@ -208,13 +211,13 @@ survfit2(Surv(months, opened) ~ 1, data = projects) |>
 
 ## tidymodels
 
-![](images/hex/rsample.png){.absolute top="200" left="0" width="150"}
-![](images/hex/recipes.png){.absolute top="200" left="250" width="150"}
-![](images/hex/workflows.png){.absolute top="200" left="400" width="150"}
-![](images/hex/parsnip.png){.absolute top="200" left="550" width="150"}
-![](images/hex/yardstick.png){.absolute top="200" left="800" width="150"}
-![](images/hex/tune.png){.absolute top="200" left="1050" width="150"}
-![](images/hex/tidymodels.png){.absolute top="400" left="825" width="250"}
+![](images/hex/rsample.png){.absolute top="200" left="0" width="150" fig-alt="rsample hex logo"}
+![](images/hex/recipes.png){.absolute top="200" left="250" width="150" fig-alt="recipes hex logo"}
+![](images/hex/workflows.png){.absolute top="200" left="400" width="150" fig-alt="workflows hex logo"}
+![](images/hex/parsnip.png){.absolute top="200" left="550" width="150" fig-alt="parsnip hex logo"}
+![](images/hex/yardstick.png){.absolute top="200" left="800" width="150" fig-alt="yardstick hex logo"}
+![](images/hex/tune.png){.absolute top="200" left="1050" width="150" fig-alt="tune hex logo"}
+![](images/hex/tidymodels.png){.absolute top="400" left="825" width="250" fig-alt="tidymodels hex logo"}
 
 ::: {.notes}
 - a framework for statistical modelling and machine learning
@@ -226,7 +229,7 @@ survfit2(Surv(months, opened) ~ 1, data = projects) |>
 
 . . .
 
-![](images/hex/censored.png){.absolute top="333" left="626" width="150"}
+![](images/hex/censored.png){.absolute top="333" left="626" width="150" fig-alt="censored hex logo"}
 
 
 
@@ -286,6 +289,7 @@ rfsrc_spec <- rand_forest(trees = 500) |>
 
 ```{r}
 #| label: tree-illustration
+#| fig-alt: "Survival tree with two splits, each leaf showing a survival curve. Projects from editions 2020 and later form one leaf of 366 projects, whose curve stays above 70% over the five years observed. Earlier editions are split by budget at 64,500 €: for the 189 smaller projects, half are open after about 20 months; for the 545 larger projects, after about 40 months."
 #| echo: false
 #| fig-width: 12
 #| fig-height: 6
@@ -505,6 +509,7 @@ final_fit <- projects_res |>
 
 ```{r}
 #| label: example-curves
+#| fig-alt: "Predicted survival curves, the probability of not yet being open over 96 months since the vote, for four projects from the 2018 edition. The living environment project with a budget of 590K € is slowest, with about a 40% chance of still not being open after 8 years. The sport (200K €) and culture (650K €) projects end around 15 to 20%, and the education project (250K €) is fastest, ending below 10%."
 #| echo: false
 #| fig-width: 11
 #| fig-height: 5.5
@@ -555,21 +560,21 @@ final_fit |>
 
 ## We extend
 
-![](images/hex/rsample.png){.absolute top="200" left="0" width="150"}
-![](images/hex/recipes.png){.absolute top="200" left="250" width="150"}
-![](images/hex/workflows.png){.absolute top="200" left="400" width="150"}
-![](images/hex/parsnip.png){.absolute top="200" left="550" width="150"}
-![](images/hex/yardstick.png){.absolute top="200" left="800" width="150"}
-![](images/hex/tune.png){.absolute top="200" left="1050" width="150"}
+![](images/hex/rsample.png){.absolute top="200" left="0" width="150" fig-alt="rsample hex logo"}
+![](images/hex/recipes.png){.absolute top="200" left="250" width="150" fig-alt="recipes hex logo"}
+![](images/hex/workflows.png){.absolute top="200" left="400" width="150" fig-alt="workflows hex logo"}
+![](images/hex/parsnip.png){.absolute top="200" left="550" width="150" fig-alt="parsnip hex logo"}
+![](images/hex/yardstick.png){.absolute top="200" left="800" width="150" fig-alt="yardstick hex logo"}
+![](images/hex/tune.png){.absolute top="200" left="1050" width="150" fig-alt="tune hex logo"}
 
 . . .
 
-![](images/hex/spatialsample.png){.absolute top="333" left="76" width="150"}
-![](images/hex/textrecipes.png){.absolute top="333" left="326" width="150"}
-![](images/hex/embed.png){.absolute top="466" left="250" width="150"}
-![](images/hex/workflowsets.png){.absolute top="333" left="476" width="150"}
-![](images/hex/censored.png){.absolute top="333" left="626" width="150"}
-![](images/hex/finetune.png){.absolute top="333" left="1126" width="150"}
+![](images/hex/spatialsample.png){.absolute top="333" left="76" width="150" fig-alt="spatialsample hex logo"}
+![](images/hex/textrecipes.png){.absolute top="333" left="326" width="150" fig-alt="textrecipes hex logo"}
+![](images/hex/embed.png){.absolute top="466" left="250" width="150" fig-alt="embed hex logo"}
+![](images/hex/workflowsets.png){.absolute top="333" left="476" width="150" fig-alt="workflowsets hex logo"}
+![](images/hex/censored.png){.absolute top="333" left="626" width="150" fig-alt="censored hex logo"}
+![](images/hex/finetune.png){.absolute top="333" left="1126" width="150" fig-alt="finetune hex logo"}
 
 ::: {.notes}
 - tidymodels is built to be extended
@@ -590,7 +595,7 @@ final_fit |>
 
 ## You extend: checklists
 
-[![](images/parsnip-dev-checklists.png){height="500" fig-align="center"}](https://parsnip.tidymodels.org/articles/checklists.html)
+[![](images/parsnip-dev-checklists.png){height="500" fig-align="center" fig-alt="The Dev checklists article in the Articles menu of the parsnip website, with checklists for adding a new model, adding a new engine, and documenting a new engine."}](https://parsnip.tidymodels.org/articles/checklists.html)
 
 [<https://parsnip.tidymodels.org/articles/checklists.html>]{style="font-size: 0.6em"}
 
@@ -602,7 +607,7 @@ final_fit |>
 
 ## You extend: skills
 
-[![](images/tidymodels-skills.png){height="500" fig-align="center"}](https://skills.tidymodels.org)
+[![](images/tidymodels-skills.png){height="500" fig-align="center" fig-alt="Homepage of tidymodels skills: Claude Code Skills for Tidymodels, to build models or create extensions following best practices."}](https://skills.tidymodels.org)
 
 [<https://skills.tidymodels.org>]{style="font-size: 0.6em"}
 
@@ -612,7 +617,7 @@ final_fit |>
 
 ## Something missing? Ask us!
 
-[![](images/issue-551.png){width="820" fig-align="center"}](https://github.com/tidymodels/yardstick/issues/551)
+[![](images/issue-551.png){width="820" fig-align="center" fig-alt="Closed GitHub issue 551 in yardstick, titled New survival metric type for linear_pred predictions. The user asks for a metric type that triggers linear predictor predictions, so they can write metrics such as Royston and Sauerbrei's R²_D."}](https://github.com/tidymodels/yardstick/issues/551)
 
 . . .
 
