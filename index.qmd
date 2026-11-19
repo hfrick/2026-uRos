@@ -195,6 +195,7 @@ Only use projects that have opened<br>→ throws away data, and biased: the slow
 
 ```{r}
 #| label: km
+#| fig-alt: "Kaplan-Meier curve of the share of projects not yet open over time since the vote, in months. It stays near 100% for the first few months, drops to 50% after roughly 45 months and to about 10% after 130 months. Small tick marks along the curve show censored projects."
 #| echo: false
 #| fig-width: 11
 #| fig-height: 5.5
