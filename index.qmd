@@ -2,6 +2,11 @@
 title: "What's new for time-to-event data in tidymodels"
 subtitle: "uRos 2026, Paris"
 author: "Hannah Frick, Posit"
+title-slide-attributes:
+  data-background-image: images/tidymodels-background.png
+  data-background-size: cover
+  data-background-opacity: "0.3"
+  data-background-color: "#141227"
 format:
   revealjs:
     slide-number: true
