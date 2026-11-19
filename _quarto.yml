@@ -1,6 +1,9 @@
 project:
   type: website
   output-dir: docs
+  render:
+    - "*.qmd"
+    - "!scratch/"
 
 website:
   title: "2026-uRos"
