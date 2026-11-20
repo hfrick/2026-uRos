@@ -101,7 +101,7 @@
     code span.vs { color: #008000; } /* VerbatimString */
     code span.wa { color: #696969; font-style: italic; } /* Warning */
   </style>
-  <link rel="stylesheet" href="site_libs/revealjs/dist/theme/quarto-206b171997da7df854af5dbb4833f489.css">
+  <link rel="stylesheet" href="site_libs/revealjs/dist/theme/quarto-befa7a1227ac36c88501720588c0c2ff.css">
   <link rel="stylesheet" href="styles.css">
   <link href="site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="site_libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
@@ -199,7 +199,7 @@
   <div class="reveal">
     <div class="slides">
 
-<section id="title-slide" class="quarto-title-block center">
+<section id="title-slide" data-background-color="#141227" data-background-image="images/tidymodels-background.png" data-background-opacity="0.3" data-background-size="cover" class="quarto-title-block center">
   <h1 class="title">What’s new for time-to-event data in tidymodels</h1>
   <p class="subtitle">uRos 2026, Paris</p>
 
@@ -235,6 +235,7 @@ Hannah Frick, Posit
 <aside class="notes">
 <ul>
 <li>city tracks every project from studies through to opening</li>
+<li>who would have reached for survival analysis to answer this question?</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -286,10 +287,33 @@ Hannah Frick, Posit
       }</style></aside>
 <!-- Censoring ------------------------------------------------------------- -->
 </section>
+<section id="not-open-yet-censored" class="slide level2">
+<h2>Not open yet = censored</h2>
+
+<img data-src="index_files/figure-revealjs/swimmer-short-1.png" class="quarto-figure quarto-figure-center r-stretch" alt="Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. Six projects end in a filled dot where they opened. The other six run up to a dashed line marking today and end in an open circle: they are not open yet." width="1056"><p>Almost 40% of the projects are not open yet</p>
+<aside class="notes">
+<ul>
+<li>we know it’s taken <em>at least</em> this long, not how long it will take</li>
+<li>you all know the drill: pretending they opened today or dropping them both bias the estimates</li>
+<li>so: survival analysis</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<!-- Long version of the censoring part: rendered as an alternative --------------- -->
+</section>
 <section id="time-to-event" class="slide level2">
 <h2>Time to event</h2>
 
-<img data-src="index_files/figure-revealjs/swimmer-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1056"><aside class="notes">
+<img data-src="index_files/figure-revealjs/swimmer-1.png" class="quarto-figure quarto-figure-center r-stretch" alt="Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. Six projects end in a filled dot where they opened. The other six run up to a dashed line marking today and end in an open circle: they are not open yet." width="1056"><aside class="notes">
 <ul>
 <li>we know it’s taken <em>at least</em> this long, not how long it will take</li>
 </ul>
@@ -308,7 +332,7 @@ Hannah Frick, Posit
 <section id="everything-is-an-event" class="slide level2">
 <h2>Everything is an event?</h2>
 
-<img data-src="index_files/figure-revealjs/swimmer-all-events-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1056"><p>Use the observed time as if every project had opened<br>→ underestimates the time until opening</p>
+<img data-src="index_files/figure-revealjs/swimmer-all-events-1.png" class="quarto-figure quarto-figure-center r-stretch" alt="Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. All twelve end in a filled dot as if they had opened, including the six that are still waiting and whose lines stop at the dashed line marking today." width="1056"><p>Use the observed time as if every project had opened<br>→ underestimates the time until opening</p>
 <aside class="notes">
 <ul>
 <li>plain regression on the observed time</li>
@@ -329,7 +353,7 @@ Hannah Frick, Posit
 <section id="drop-the-ones-still-waiting" class="slide level2">
 <h2>Drop the ones still waiting?</h2>
 
-<img data-src="index_files/figure-revealjs/swimmer-drop-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1056"><p>Only use projects that have opened<br>→ throws away data, and biased: the slow ones are the ones still waiting</p>
+<img data-src="index_files/figure-revealjs/swimmer-drop-1.png" class="quarto-figure quarto-figure-center r-stretch" alt="Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. The six projects that have opened are shown in full. The six still waiting, which have the longest lines, are faded out." width="1056"><p>Only use projects that have opened<br>→ throws away data, and biased: the slow ones are the ones still waiting</p>
 <aside class="notes">
 <ul>
 <li>not missing at random</li>
@@ -348,41 +372,16 @@ Hannah Frick, Posit
           display:block!important;
       }</style></aside>
 </section>
-<section id="survival-analysis" class="slide level2">
-<h2>Survival analysis</h2>
-<ul>
-<li>The right tool for <em>censored regression</em></li>
-<li>Despite the name, the event can be loads of things:
-<ul>
-<li>A project opening</li>
-<li>A business closing</li>
-<li>Leaving unemployment or benefits</li>
-<li>A household responding during fieldwork</li>
-</ul></li>
-</ul>
-<aside class="notes">
 
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-<!-- OPTIONAL slide: Kaplan-Meier curve -->
-</section>
 <section id="kaplan-meier-curve" class="slide level2">
 <h2>Kaplan-Meier curve</h2>
 
-<img data-src="index_files/figure-revealjs/km-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1056"><aside class="notes">
+<img data-src="index_files/figure-revealjs/km-1.png" class="quarto-figure quarto-figure-center r-stretch" alt="Kaplan-Meier curve of the share of projects not yet open over time since the vote, in months. It stays near 100% for the first few months, drops to 50% after roughly 45 months and to about 10% after 130 months. Small tick marks along the curve show censored projects." width="1056"><aside class="notes">
 <ul>
 <li>Time = Months since the vote</li>
 <li>Survival prob = prob the project is not yet open</li>
 <li>ticks: censored projects, they count as “still waiting” up until they leave the data</li>
+<li>later: the null model is exactly this curve, for everyone</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -399,7 +398,7 @@ Hannah Frick, Posit
 </section>
 <section id="tidymodels" class="slide level2">
 <h2>tidymodels</h2>
-<p><img data-src="images/hex/rsample.png" class="absolute" style="top: 200px; left: 0px; width: 150px; "> <img data-src="images/hex/recipes.png" class="absolute" style="top: 200px; left: 250px; width: 150px; "> <img data-src="images/hex/workflows.png" class="absolute" style="top: 200px; left: 400px; width: 150px; "> <img data-src="images/hex/parsnip.png" class="absolute" style="top: 200px; left: 550px; width: 150px; "> <img data-src="images/hex/yardstick.png" class="absolute" style="top: 200px; left: 800px; width: 150px; "> <img data-src="images/hex/tune.png" class="absolute" style="top: 200px; left: 1050px; width: 150px; "> <img data-src="images/hex/tidymodels.png" class="absolute" style="top: 400px; left: 825px; width: 250px; "></p>
+<p><img data-src="images/hex/rsample.png" class="absolute" style="top: 200px; left: 0px; width: 150px; " alt="rsample hex logo"> <img data-src="images/hex/recipes.png" class="absolute" style="top: 200px; left: 250px; width: 150px; " alt="recipes hex logo"> <img data-src="images/hex/workflows.png" class="absolute" style="top: 200px; left: 400px; width: 150px; " alt="workflows hex logo"> <img data-src="images/hex/parsnip.png" class="absolute" style="top: 200px; left: 550px; width: 150px; " alt="parsnip hex logo"> <img data-src="images/hex/yardstick.png" class="absolute" style="top: 200px; left: 800px; width: 150px; " alt="yardstick hex logo"> <img data-src="images/hex/tune.png" class="absolute" style="top: 200px; left: 1050px; width: 150px; " alt="tune hex logo"> <img data-src="images/hex/tidymodels.png" class="absolute" style="top: 400px; left: 825px; width: 250px; " alt="tidymodels hex logo"></p>
 <aside class="notes">
 <ul>
 <li>a framework for statistical modelling and machine learning</li>
@@ -420,13 +419,13 @@ Hannah Frick, Posit
           display:block!important;
       }</style></aside>
 <div class="fragment">
-<p><img data-src="images/hex/censored.png" class="absolute" style="top: 333px; left: 626px; width: 150px; "></p>
+<p><img data-src="images/hex/censored.png" class="absolute" style="top: 333px; left: 626px; width: 150px; " alt="censored hex logo"></p>
 </div>
 </section>
 <section id="setting-up" class="slide level2">
 <h2>Setting up</h2>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" data-code-line-numbers="1-2|4-7|9-12|14-16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a aria-label="1"></a>projects <span class="ot">&lt;-</span> projects <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" data-code-line-numbers="1-2|4-7|9-12|14-16|18-22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a aria-label="1"></a>projects <span class="ot">&lt;-</span> projects <span class="sc">|&gt;</span></span>
 <span id="cb2-2"><a aria-label="2"></a>  <span class="fu">mutate</span>(<span class="at">opening_time =</span> <span class="fu">Surv</span>(months, opened), <span class="at">.keep =</span> <span class="st">"unused"</span>)</span>
 <span id="cb2-3"><a aria-label="3"></a></span>
 <span id="cb2-4"><a aria-label="4"></a><span class="fu">set.seed</span>(<span class="dv">403</span>)</span>
@@ -441,21 +440,14 @@ Hannah Frick, Posit
 <span id="cb2-13"><a aria-label="13"></a></span>
 <span id="cb2-14"><a aria-label="14"></a>cox_spec <span class="ot">&lt;-</span> <span class="fu">proportional_hazards</span>() <span class="sc">|&gt;</span></span>
 <span id="cb2-15"><a aria-label="15"></a>  <span class="fu">set_engine</span>(<span class="st">"survival"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-16"><a aria-label="16"></a>  <span class="fu">set_mode</span>(<span class="st">"censored regression"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-16"><a aria-label="16"></a>  <span class="fu">set_mode</span>(<span class="st">"censored regression"</span>)</span>
+<span id="cb2-17"><a aria-label="17"></a></span>
+<span id="cb2-18"><a aria-label="18"></a>projects_metrics <span class="ot">&lt;-</span> <span class="fu">metric_set</span>(</span>
+<span id="cb2-19"><a aria-label="19"></a>  brier_survival,</span>
+<span id="cb2-20"><a aria-label="20"></a>  brier_survival_integrated,</span>
+<span id="cb2-21"><a aria-label="21"></a>  concordance_survival</span>
+<span id="cb2-22"><a aria-label="22"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<aside class="notes">
-
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
 <!-- What's new: models ---------------------------------------------------- -->
 </section>
 <section>
@@ -466,7 +458,7 @@ Hannah Frick, Posit
 <section id="two-new-engines-for-random-forests" class="slide level2">
 <h2>Two new engines for random forests</h2>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" data-code-line-numbers="1,5|2,6|1-7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a aria-label="1"></a>ranger_spec <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>(<span class="at">trees =</span> <span class="dv">500</span>) <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" data-code-line-numbers="|2,6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a aria-label="1"></a>ranger_spec <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>(<span class="at">trees =</span> <span class="dv">500</span>) <span class="sc">|&gt;</span></span>
 <span id="cb3-2"><a aria-label="2"></a>  <span class="fu">set_engine</span>(<span class="st">"ranger"</span>) <span class="sc">|&gt;</span></span>
 <span id="cb3-3"><a aria-label="3"></a>  <span class="fu">set_mode</span>(<span class="st">"censored regression"</span>)</span>
 <span id="cb3-4"><a aria-label="4"></a></span>
@@ -497,7 +489,7 @@ Hannah Frick, Posit
 <section id="survival-trees" class="slide level2">
 <h2>Survival trees</h2>
 
-<img data-src="index_files/figure-revealjs/tree-illustration-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1152"><aside class="notes">
+<img data-src="index_files/figure-revealjs/tree-illustration-1.png" class="quarto-figure quarto-figure-center r-stretch" alt="Survival tree with two splits, each leaf showing a survival curve. Projects from editions 2020 and later form one leaf of 366 projects, whose curve stays above 70% over the five years observed. Earlier editions are split by budget at 64,500 €: for the 189 smaller projects, half are open after about 20 months; for the 545 larger projects, after about 40 months." width="1152"><aside class="notes">
 <ul>
 <li>a forest averages many such trees</li>
 <li>each leaf holds a survival curve, not a single number</li>
@@ -527,32 +519,9 @@ Hannah Frick, Posit
 <li>Ignores all predictors: one Kaplan-Meier curve for everyone</li>
 <li>Does your model beat doing nothing?</li>
 </ul>
-</section>
-
-
-<section id="resampling-the-null-model" class="slide level2">
-<h2>Resampling the null model</h2>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a aria-label="1"></a>null_wflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>(projects_rec, null_spec)</span>
-<span id="cb7-2"><a aria-label="2"></a></span>
-<span id="cb7-3"><a aria-label="3"></a>projects_metrics <span class="ot">&lt;-</span> <span class="fu">metric_set</span>(</span>
-<span id="cb7-4"><a aria-label="4"></a>  brier_survival,</span>
-<span id="cb7-5"><a aria-label="5"></a>  brier_survival_integrated,</span>
-<span id="cb7-6"><a aria-label="6"></a>  concordance_survival</span>
-<span id="cb7-7"><a aria-label="7"></a>)</span>
-<span id="cb7-8"><a aria-label="8"></a></span>
-<span id="cb7-9"><a aria-label="9"></a>null_res <span class="ot">&lt;-</span> <span class="fu">fit_resamples</span>(</span>
-<span id="cb7-10"><a aria-label="10"></a>  null_wflow,</span>
-<span id="cb7-11"><a aria-label="11"></a>  <span class="at">resamples =</span> projects_folds,</span>
-<span id="cb7-12"><a aria-label="12"></a>  <span class="at">metrics =</span> projects_metrics,</span>
-<span id="cb7-13"><a aria-label="13"></a>  <span class="at">eval_time =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">96</span></span>
-<span id="cb7-14"><a aria-label="14"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 <aside class="notes">
 <ul>
-<li>we take care of the procedural code: 10 fits, predictions on the held-out folds, metrics at 96 time points, collected for you</li>
-<li>Brier score: how close the predicted probability is to what happened, at time t (lower is better)</li>
-<li>every month for the first 8 years; longer than that, only the earliest editions are followed up and estimates get noisy</li>
+<li>the Kaplan-Meier curve from the start, for every project</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -566,55 +535,33 @@ Hannah Frick, Posit
           display:block!important;
       }</style></aside>
 </section>
-<section id="the-baseline" class="slide level2">
-<h2>The baseline</h2>
 
-<img data-src="index_files/figure-revealjs/null-brier-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1056"><aside class="notes">
-<ul>
-<li>the Brier score of the null model over time</li>
-<li>low at first: almost no project opens in the first months, easy to predict</li>
-<li>peaks when it’s hardest to tell who’s still waiting</li>
-</ul>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-<!-- tidymodels for survival analysis -------------------------------------- -->
-</section>
+
 <section id="many-models-at-once" class="slide level2">
 <h2>Many models at once</h2>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a aria-label="1"></a>projects_res <span class="ot">&lt;-</span> <span class="fu">workflow_set</span>(</span>
-<span id="cb8-2"><a aria-label="2"></a>  <span class="at">preproc =</span> <span class="fu">list</span>(<span class="at">rec =</span> projects_rec),</span>
-<span id="cb8-3"><a aria-label="3"></a>  <span class="at">models =</span> <span class="fu">list</span>(</span>
-<span id="cb8-4"><a aria-label="4"></a>    <span class="at">null =</span> null_spec,</span>
-<span id="cb8-5"><a aria-label="5"></a>    <span class="at">cox =</span> cox_spec,</span>
-<span id="cb8-6"><a aria-label="6"></a>    <span class="at">ranger =</span> ranger_spec,</span>
-<span id="cb8-7"><a aria-label="7"></a>    <span class="at">rfsrc =</span> rfsrc_spec</span>
-<span id="cb8-8"><a aria-label="8"></a>  )</span>
-<span id="cb8-9"><a aria-label="9"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb8-10"><a aria-label="10"></a>  <span class="fu">workflow_map</span>(</span>
-<span id="cb8-11"><a aria-label="11"></a>    <span class="st">"fit_resamples"</span>,</span>
-<span id="cb8-12"><a aria-label="12"></a>    <span class="at">resamples =</span> projects_folds,</span>
-<span id="cb8-13"><a aria-label="13"></a>    <span class="at">metrics =</span> projects_metrics,</span>
-<span id="cb8-14"><a aria-label="14"></a>    <span class="at">eval_time =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">96</span>,</span>
-<span id="cb8-15"><a aria-label="15"></a>    <span class="at">seed =</span> <span class="dv">1</span></span>
-<span id="cb8-16"><a aria-label="16"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a aria-label="1"></a>projects_res <span class="ot">&lt;-</span> <span class="fu">workflow_set</span>(</span>
+<span id="cb7-2"><a aria-label="2"></a>  <span class="at">preproc =</span> <span class="fu">list</span>(<span class="at">rec =</span> projects_rec),</span>
+<span id="cb7-3"><a aria-label="3"></a>  <span class="at">models =</span> <span class="fu">list</span>(</span>
+<span id="cb7-4"><a aria-label="4"></a>    <span class="at">null =</span> null_spec,</span>
+<span id="cb7-5"><a aria-label="5"></a>    <span class="at">cox =</span> cox_spec,</span>
+<span id="cb7-6"><a aria-label="6"></a>    <span class="at">ranger =</span> ranger_spec,</span>
+<span id="cb7-7"><a aria-label="7"></a>    <span class="at">rfsrc =</span> rfsrc_spec</span>
+<span id="cb7-8"><a aria-label="8"></a>  )</span>
+<span id="cb7-9"><a aria-label="9"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb7-10"><a aria-label="10"></a>  <span class="fu">workflow_map</span>(</span>
+<span id="cb7-11"><a aria-label="11"></a>    <span class="st">"fit_resamples"</span>,</span>
+<span id="cb7-12"><a aria-label="12"></a>    <span class="at">resamples =</span> projects_folds,</span>
+<span id="cb7-13"><a aria-label="13"></a>    <span class="at">metrics =</span> projects_metrics,</span>
+<span id="cb7-14"><a aria-label="14"></a>    <span class="at">eval_time =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">96</span>,</span>
+<span id="cb7-15"><a aria-label="15"></a>    <span class="at">seed =</span> <span class="dv">1</span></span>
+<span id="cb7-16"><a aria-label="16"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <aside class="notes">
 <ul>
-<li><p>we take care of the procedural code, again: 4 models × 10 folds</p></li>
-<li><p>you focus on the modelling choices: preprocessing, models, metrics</p></li>
-<li><p>link to production: a short declarative specification instead of hand-written loops</p></li>
-<li><p>easier to review, easy to rerun when next year’s data arrives</p></li>
-<li><p>auditable, reproducible, same code gives same results</p></li>
+<li>we take care of the procedural code</li>
+<li>you focus on the modelling choices: preprocessing, models, metrics</li>
+<li>easier to review</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -628,12 +575,36 @@ Hannah Frick, Posit
           display:block!important;
       }</style></aside>
 </section>
-<section id="every-model-beats-the-baseline" class="slide level2">
-<h2>Every model beats the baseline</h2>
-
-<img data-src="index_files/figure-revealjs/brier-over-time-1.png" class="quarto-figure quarto-figure-center r-stretch" width="1056"><aside class="notes">
+<section id="beating-the-baseline" class="slide level2">
+<h2>Beating the baseline</h2>
+<div class="r-stack">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="index_files/figure-revealjs/brier-null-1.png" class="quarto-figure quarto-figure-center" alt="Brier score of the null model, as a dashed line over months since the vote: zero for the first months, rising to a peak of about 0.25 around month 45, then falling to about 0.16 by month 96." width="1056"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="index_files/figure-revealjs/brier-over-time-1.png" class="quarto-figure quarto-figure-center" alt="Brier score over months since the vote for the null model, as a dashed line, and for the Cox model, ranger and randomForestSRC. All models are close during the first year. After that, the three models stay clearly below the null model, peaking around 0.2, with randomForestSRC lowest throughout. Late on, after about 85 months, ranger rises above the null model." width="1056"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<aside class="notes">
 <ul>
-<li>ranger: The cause is ranger’s default minimum node size of 3 for survival forests. Tiny terminal nodes keep survival curves flat at high values in the tail.</li>
+<li>Brier score: how close the predicted probability is to what happened, at time t (lower is better)</li>
+<li>null model first: low at first, almost no project opens in the first months; peaks when it’s hardest to tell who’s still waiting</li>
+<li>(click) the other models</li>
+<li>ranger is weaker in the tail: its small default minimum node size keeps the survival curves high late on</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -657,9 +628,9 @@ Hannah Frick, Posit
 </section>
 <section id="we-extend" class="slide level2">
 <h2>We extend</h2>
-<p><img data-src="images/hex/rsample.png" class="absolute" style="top: 200px; left: 0px; width: 150px; "> <img data-src="images/hex/recipes.png" class="absolute" style="top: 200px; left: 250px; width: 150px; "> <img data-src="images/hex/workflows.png" class="absolute" style="top: 200px; left: 400px; width: 150px; "> <img data-src="images/hex/parsnip.png" class="absolute" style="top: 200px; left: 550px; width: 150px; "> <img data-src="images/hex/yardstick.png" class="absolute" style="top: 200px; left: 800px; width: 150px; "> <img data-src="images/hex/tune.png" class="absolute" style="top: 200px; left: 1050px; width: 150px; "></p>
+<p><img data-src="images/hex/rsample.png" class="absolute" style="top: 200px; left: 0px; width: 150px; " alt="rsample hex logo"> <img data-src="images/hex/recipes.png" class="absolute" style="top: 200px; left: 250px; width: 150px; " alt="recipes hex logo"> <img data-src="images/hex/workflows.png" class="absolute" style="top: 200px; left: 400px; width: 150px; " alt="workflows hex logo"> <img data-src="images/hex/parsnip.png" class="absolute" style="top: 200px; left: 550px; width: 150px; " alt="parsnip hex logo"> <img data-src="images/hex/yardstick.png" class="absolute" style="top: 200px; left: 800px; width: 150px; " alt="yardstick hex logo"> <img data-src="images/hex/tune.png" class="absolute" style="top: 200px; left: 1050px; width: 150px; " alt="tune hex logo"></p>
 <div class="fragment">
-<p><img data-src="images/hex/spatialsample.png" class="absolute" style="top: 333px; left: 76px; width: 150px; "> <img data-src="images/hex/textrecipes.png" class="absolute" style="top: 333px; left: 326px; width: 150px; "> <img data-src="images/hex/embed.png" class="absolute" style="top: 466px; left: 250px; width: 150px; "> <img data-src="images/hex/workflowsets.png" class="absolute" style="top: 333px; left: 476px; width: 150px; "> <img data-src="images/hex/censored.png" class="absolute" style="top: 333px; left: 626px; width: 150px; "> <img data-src="images/hex/finetune.png" class="absolute" style="top: 333px; left: 1126px; width: 150px; "></p>
+<p><img data-src="images/hex/spatialsample.png" class="absolute" style="top: 333px; left: 76px; width: 150px; " alt="spatialsample hex logo"> <img data-src="images/hex/textrecipes.png" class="absolute" style="top: 333px; left: 326px; width: 150px; " alt="textrecipes hex logo"> <img data-src="images/hex/embed.png" class="absolute" style="top: 466px; left: 250px; width: 150px; " alt="embed hex logo"> <img data-src="images/hex/workflowsets.png" class="absolute" style="top: 333px; left: 476px; width: 150px; " alt="workflowsets hex logo"> <img data-src="images/hex/censored.png" class="absolute" style="top: 333px; left: 626px; width: 150px; " alt="censored hex logo"> <img data-src="images/hex/finetune.png" class="absolute" style="top: 333px; left: 1126px; width: 150px; " alt="finetune hex logo"></p>
 <aside class="notes">
 <ul>
 <li>tidymodels is built to be extended</li>
@@ -679,11 +650,62 @@ Hannah Frick, Posit
       }</style></aside>
 </div>
 </section>
+<section id="you-extend" class="slide level2">
+<h2>You extend</h2>
+<div class="columns">
+<div class="column" style="width:33%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><a href="https://www.tidymodels.org/learn/#category=developer%20tools"><img data-src="images/tidymodels-learn-developer-tools.png" class="quarto-figure quarto-figure-center" alt="The Learn page on tidymodels.org with the developer tools category highlighted, listing articles such as creating your own broom tidier methods, recipe step function, and score class object."></a></p>
+</figure>
+</div>
+<div style="text-align: center">
+<p><a href="https://www.tidymodels.org/learn/#category=developer%20tools">Developer articles</a></p>
+</div>
+</div><div class="column" style="width:33%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><a href="https://parsnip.tidymodels.org/articles/checklists.html"><img data-src="images/parsnip-dev-checklists.png" class="quarto-figure quarto-figure-center" alt="The Dev checklists article in the Articles menu of the parsnip website, with checklists for adding a new model, adding a new engine, and documenting a new engine."></a></p>
+</figure>
+</div>
+<div style="text-align: center">
+<p><a href="https://parsnip.tidymodels.org/articles/checklists.html">Checklists</a></p>
+</div>
+</div><div class="column" style="width:33%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><a href="https://skills.tidymodels.org"><img data-src="images/tidymodels-skills.png" class="quarto-figure quarto-figure-center" alt="Homepage of tidymodels skills: Claude Code Skills for Tidymodels, to build models or create extensions following best practices."></a></p>
+</figure>
+</div>
+<div style="text-align: center">
+<p><a href="https://skills.tidymodels.org">Skills</a></p>
+</div>
+</div></div>
+<aside class="notes">
+<ul>
+<li>you can build your own: models, engines, recipe steps, metrics, tidiers</li>
+<li>we’ve written down how: developer articles on tidymodels.org (Learn, developer tools)</li>
+<li>the checklists we use ourselves, for new models and engines (parsnip) and for new steps (recipes)</li>
+<li>Claude Code skills for tidymodels: for using it, and for creating extensions following our practices</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<!-- Long version of "you extend": rendered as an alternative -------------------- -->
+</section>
 <section id="you-extend-developer-articles" class="slide level2">
 <h2>You extend: developer articles</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><a href="https://www.tidymodels.org/learn/#category=developer%20tools"><img data-src="images/tidymodels-learn-developer-tools.png" class="quarto-figure quarto-figure-center" height="500"></a></p>
+<p><a href="https://www.tidymodels.org/learn/#category=developer%20tools"><img data-src="images/tidymodels-learn-developer-tools.png" class="quarto-figure quarto-figure-center" alt="The Learn page on tidymodels.org with the developer tools category highlighted, listing articles such as creating your own broom tidier methods, recipe step function, and score class object." height="500"></a></p>
 </figure>
 </div>
 <p><span style="font-size: 0.6em"><a href="https://www.tidymodels.org/learn/#category=developer%20tools" class="uri">https://www.tidymodels.org/learn/#category=developer%20tools</a></span></p>
@@ -708,7 +730,7 @@ Hannah Frick, Posit
 <h2>You extend: checklists</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><a href="https://parsnip.tidymodels.org/articles/checklists.html"><img data-src="images/parsnip-dev-checklists.png" class="quarto-figure quarto-figure-center" height="500"></a></p>
+<p><a href="https://parsnip.tidymodels.org/articles/checklists.html"><img data-src="images/parsnip-dev-checklists.png" class="quarto-figure quarto-figure-center" alt="The Dev checklists article in the Articles menu of the parsnip website, with checklists for adding a new model, adding a new engine, and documenting a new engine." height="500"></a></p>
 </figure>
 </div>
 <p><span style="font-size: 0.6em"><a href="https://parsnip.tidymodels.org/articles/checklists.html" class="uri">https://parsnip.tidymodels.org/articles/checklists.html</a></span></p>
@@ -734,7 +756,7 @@ Hannah Frick, Posit
 <h2>You extend: skills</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><a href="https://skills.tidymodels.org"><img data-src="images/tidymodels-skills.png" class="quarto-figure quarto-figure-center" height="500"></a></p>
+<p><a href="https://skills.tidymodels.org"><img data-src="images/tidymodels-skills.png" class="quarto-figure quarto-figure-center" alt="Homepage of tidymodels skills: Claude Code Skills for Tidymodels, to build models or create extensions following best practices." height="500"></a></p>
 </figure>
 </div>
 <p><span style="font-size: 0.6em"><a href="https://skills.tidymodels.org" class="uri">https://skills.tidymodels.org</a></span></p>
@@ -753,12 +775,13 @@ Hannah Frick, Posit
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
+<!-- End of the long version of "you extend" ------------------------------ -->
 </section>
 <section id="something-missing-ask-us" class="slide level2">
 <h2>Something missing? Ask us!</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><a href="https://github.com/tidymodels/yardstick/issues/551"><img data-src="images/issue-551.png" class="quarto-figure quarto-figure-center" width="820"></a></p>
+<p><a href="https://github.com/tidymodels/yardstick/issues/551"><img data-src="images/issue-551.png" class="quarto-figure quarto-figure-center" alt="Closed GitHub issue 551 in yardstick, titled New survival metric type for linear_pred predictions. The user asks for a metric type that triggers linear predictor predictions, so they can write metrics such as Royston and Sauerbrei's R²_D." width="820"></a></p>
 </figure>
 </div>
 <div class="fragment">
@@ -794,7 +817,9 @@ Hannah Frick, Posit
 <li>Also new: faster tuning for boosted trees, censoring weights in <code>predict()</code></li>
 </ul>
 <p><br></p>
-<!-- TODO: add link to the censored 0.4.0 blog post once it's published -->
+<div style="text-align: center">
+<p><a href="https://opensource.posit.co/blog/2026-11-20_censored-0-4-0/" class="uri">https://opensource.posit.co/blog/2026-11-20_censored-0-4-0/</a></p>
+</div>
 <aside class="notes">
 <ul>
 <li>boosted trees with mboost: multi_predict(), so tune_grid() fits one model per number of trees</li>
@@ -814,6 +839,7 @@ Hannah Frick, Posit
 <section id="durations-with-unfinished-cases" class="slide level2">
 <h2>Durations with unfinished cases?</h2>
 <ul>
+<li>Project openings, business closures, unemployment spells, fieldwork response, …</li>
 <li>Censored regression in tidymodels works just like classification or regression</li>
 <li>If something is missing, you can extend the framework, or ask us</li>
 </ul>
