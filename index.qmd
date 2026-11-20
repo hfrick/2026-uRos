@@ -668,7 +668,9 @@ workflow(projects_rec, cox_spec) |>
 
 <br>
 
-<!-- TODO: add link to the censored 0.4.0 blog post once it's published -->
+::: {style="text-align: center"}
+<https://opensource.posit.co/blog/2026-11-20_censored-0-4-0/>
+:::
 
 ::: {.notes}
 - boosted trees with mboost: multi_predict(), so tune_grid() fits one model per number of trees
