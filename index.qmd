@@ -60,6 +60,7 @@ Photo by [Eric Tompkins](https://unsplash.com/@erictompkins) on [Unsplash](https
 
 ::: {.notes}
 - city tracks every project from studies through to opening
+- who would have reached for survival analysis to answer this question?
 :::
 
 ## The data
@@ -112,6 +113,32 @@ swimmer_plot <- function(data) {
     )
 }
 ```
+
+## Not open yet = censored
+
+```{r}
+#| label: swimmer-short
+#| fig-alt: "Timeline of 12 example projects, each drawn as a horizontal line from its vote, between 2017 and 2025, to its end. Six projects end in a filled dot where they opened. The other six run up to a dashed line marking today and end in an open circle: they are not open yet."
+#| echo: false
+#| fig-width: 11
+#| fig-height: 5.5
+swimmers |>
+  mutate(
+    status = if_else(opened, "opened", "not open yet"),
+    keep = TRUE
+  ) |>
+  swimmer_plot()
+```
+
+Almost 40% of the projects are not open yet
+
+::: {.notes}
+- we know it's taken *at least* this long, not how long it will take
+- you all know the drill: pretending they opened today or dropping them both bias the estimates
+- so: survival analysis
+:::
+
+<!-- Long version of the censoring part: rendered as an alternative --------------- -->
 
 ## Time to event
 
@@ -177,7 +204,7 @@ Only use projects that have opened<br>→ throws away data, and biased: the slow
 - especially recent editions would be left with only their fastest projects
 :::
 
-## Survival analysis
+## Survival analysis {visibility="hidden"}
 
 - The right tool for _censored regression_
 - Despite the name, the event can be loads of things:
@@ -186,10 +213,7 @@ Only use projects that have opened<br>→ throws away data, and biased: the slow
   - Leaving unemployment or benefits
   - A household responding during fieldwork
 
-::: {.notes}
-:::
-
-<!-- OPTIONAL slide: Kaplan-Meier curve -->
+<!-- End of the long version of the censoring part ------------------------ -->
 
 ## Kaplan-Meier curve
 
@@ -211,6 +235,7 @@ survfit2(Surv(months, opened) ~ 1, data = projects) |>
 - Time = Months since the vote
 - Survival prob = prob the project is not yet open
 - ticks: censored projects, they count as "still waiting" up until they leave the data
+- later: the null model is exactly this curve, for everyone
 :::
 
 <!-- tidymodels ------------------------------------------------------------ -->
@@ -243,7 +268,7 @@ survfit2(Surv(months, opened) ~ 1, data = projects) |>
 
 ```{r}
 #| label: setup-code
-#| code-line-numbers: "1-2|4-7|9-12|14-16"
+#| code-line-numbers: "1-2|4-7|9-12|14-16|18-22"
 projects <- projects |>
   mutate(opening_time = Surv(months, opened), .keep = "unused")
 
@@ -260,10 +285,13 @@ projects_rec <- recipe(opening_time ~ ., data = projects_train) |>
 cox_spec <- proportional_hazards() |>
   set_engine("survival") |>
   set_mode("censored regression")
-```
 
-::: {.notes}
-:::
+projects_metrics <- metric_set(
+  brier_survival,
+  brier_survival_integrated,
+  concordance_survival
+)
+```
 
 <!-- What's new: models ---------------------------------------------------- -->
 
@@ -273,7 +301,7 @@ cox_spec <- proportional_hazards() |>
 
 ```{r}
 #| label: spec-rf
-#| code-line-numbers: "1,5|2,6|1-7"
+#| code-line-numbers: "|2,6"
 ranger_spec <- rand_forest(trees = 500) |>
   set_engine("ranger") |>
   set_mode("censored regression")
@@ -328,6 +356,10 @@ null_spec <- null_model() |>
 - Ignores all predictors: one Kaplan-Meier curve for everyone
 - Does your model beat doing nothing?
 
+::: {.notes}
+- the Kaplan-Meier curve from the start, for every project
+:::
+
 ## The same prediction for everyone {visibility="hidden"}
 
 ```{r}
@@ -362,54 +394,6 @@ null_pred$.pred[[1]]
 - this is the type of prediction the Brier score works with
 :::
 
-## Resampling the null model
-
-```{r}
-#| label: null-resamples
-#| cache: true
-null_wflow <- workflow(projects_rec, null_spec)
-
-projects_metrics <- metric_set(
-  brier_survival,
-  brier_survival_integrated,
-  concordance_survival
-)
-
-null_res <- fit_resamples(
-  null_wflow,
-  resamples = projects_folds,
-  metrics = projects_metrics,
-  eval_time = 1:96
-)
-```
-
-::: {.notes}
-- we take care of the procedural code: 10 fits, predictions on the held-out folds, metrics at 96 time points, collected for you
-- Brier score: how close the predicted probability is to what happened, at time t (lower is better)
-- every month for the first 8 years; longer than that, only the earliest editions are followed up and estimates get noisy
-:::
-
-## The baseline
-
-```{r}
-#| label: null-brier
-#| echo: false
-#| fig-width: 11
-#| fig-height: 5.5
-null_brier <- collect_metrics(null_res) |>
-  filter(.metric == "brier_survival")
-
-ggplot(null_brier, aes(.eval_time, mean)) +
-  geom_line(linewidth = 1.5, linetype = "dashed") +
-  labs(x = "Months since the vote", y = "Brier score (lower is better)")
-```
-
-::: {.notes}
-- the Brier score of the null model over time
-- low at first: almost no project opens in the first months, easy to predict
-- peaks when it's hardest to tell who's still waiting
-:::
-
 <!-- tidymodels for survival analysis -------------------------------------- -->
 
 ## Many models at once
@@ -436,54 +420,79 @@ projects_res <- workflow_set(
 ```
 
 ::: {.notes}
-- we take care of the procedural code, again: 4 models × 10 folds
+- we take care of the procedural code
 - you focus on the modelling choices: preprocessing, models, metrics
-
-- link to production: a short declarative specification instead of hand-written loops
-- easier to review, easy to rerun when next year's data arrives
-- auditable, reproducible, same code gives same results
+- easier to review
 :::
 
-## Every model beats the baseline
+## Beating the baseline
 
 ```{r}
-#| label: brier-over-time
-#| echo: false
-#| fig-width: 11
-#| fig-height: 5.5
+#| label: brier-setup
+#| include: false
 brier <- collect_metrics(projects_res) |>
   filter(.metric == "brier_survival") |>
   mutate(model = str_remove(wflow_id, "rec_"))
 
-ggplot(brier, aes(.eval_time, mean, group = model)) +
-  geom_line(
-    data = filter(brier, model != "null"),
-    aes(color = model),
-    linewidth = 0.8
-  ) +
-  geom_line(
-    data = filter(brier, model == "null"),
-    linewidth = 1.5,
-    linetype = "dashed"
-  ) +
-  annotate(
-    "text",
-    x = 45,
-    y = max(filter(brier, model == "null")$mean),
-    label = "null model",
-    vjust = -0.8,
-    size = 6
-  ) +
-  expand_limits(y = max(brier$mean) * 1.1) +
-  labs(
-    x = "Months since the vote",
-    y = "Brier score (lower is better)",
-    color = NULL
-  )
+# model_alpha = 0 keeps the layout (incl. legend) but hides the models
+brier_plot <- function(model_alpha = 1) {
+  ggplot(brier, aes(.eval_time, mean, group = model)) +
+    geom_line(
+      data = filter(brier, model != "null"),
+      aes(color = model),
+      linewidth = 0.8,
+      alpha = model_alpha
+    ) +
+    geom_line(
+      data = filter(brier, model == "null"),
+      linewidth = 1.5,
+      linetype = "dashed"
+    ) +
+    annotate(
+      "text",
+      x = 45,
+      y = max(filter(brier, model == "null")$mean),
+      label = "null model",
+      vjust = -0.8,
+      size = 6
+    ) +
+    expand_limits(y = max(brier$mean) * 1.1) +
+    labs(
+      x = "Months since the vote",
+      y = "Brier score (lower is better)",
+      color = NULL
+    )
+}
 ```
 
+::: {.r-stack}
+```{r}
+#| label: brier-null
+#| fig-alt: "Brier score of the null model, as a dashed line over months since the vote: zero for the first months, rising to a peak of about 0.25 around month 45, then falling to about 0.16 by month 96."
+#| echo: false
+#| fig-width: 11
+#| fig-height: 5.5
+brier_plot(model_alpha = 0) +
+  theme(legend.text = element_text(colour = "transparent"))
+```
+
+::: {.fragment}
+```{r}
+#| label: brier-over-time
+#| fig-alt: "Brier score over months since the vote for the null model, as a dashed line, and for the Cox model, ranger and randomForestSRC. All models are close during the first year. After that, the three models stay clearly below the null model, peaking around 0.2, with randomForestSRC lowest throughout. Late on, after about 85 months, ranger rises above the null model."
+#| echo: false
+#| fig-width: 11
+#| fig-height: 5.5
+brier_plot()
+```
+:::
+:::
+
 ::: {.notes}
-- ranger: The cause is ranger's default minimum node size of 3 for survival forests. Tiny terminal nodes keep survival curves flat at high values in the tail.
+- Brier score: how close the predicted probability is to what happened, at time t (lower is better)
+- null model first: low at first, almost no project opens in the first months; peaks when it's hardest to tell who's still waiting
+- (click) the other models
+- ranger is weaker in the tail: its small default minimum node size keeps the survival curves high late on
 :::
 
 <!-- OPTIONAL: getting to the final model ---------------------------------- -->
@@ -588,9 +597,44 @@ final_fit |>
 - not much for yardstick so far
 :::
 
+## You extend
+
+:::: {.columns}
+::: {.column width="33%"}
+[![](images/tidymodels-learn-developer-tools.png){fig-align="center" fig-alt="The Learn page on tidymodels.org with the developer tools category highlighted, listing articles such as creating your own broom tidier methods, recipe step function, and score class object."}](https://www.tidymodels.org/learn/#category=developer%20tools)
+
+::: {style="text-align: center"}
+[Developer articles](https://www.tidymodels.org/learn/#category=developer%20tools)
+:::
+:::
+::: {.column width="33%"}
+[![](images/parsnip-dev-checklists.png){fig-align="center" fig-alt="The Dev checklists article in the Articles menu of the parsnip website, with checklists for adding a new model, adding a new engine, and documenting a new engine."}](https://parsnip.tidymodels.org/articles/checklists.html)
+
+::: {style="text-align: center"}
+[Checklists](https://parsnip.tidymodels.org/articles/checklists.html)
+:::
+:::
+::: {.column width="33%"}
+[![](images/tidymodels-skills.png){fig-align="center" fig-alt="Homepage of tidymodels skills: Claude Code Skills for Tidymodels, to build models or create extensions following best practices."}](https://skills.tidymodels.org)
+
+::: {style="text-align: center"}
+[Skills](https://skills.tidymodels.org)
+:::
+:::
+::::
+
+::: {.notes}
+- you can build your own: models, engines, recipe steps, metrics, tidiers
+- we've written down how: developer articles on tidymodels.org (Learn, developer tools)
+- the checklists we use ourselves, for new models and engines (parsnip) and for new steps (recipes)
+- Claude Code skills for tidymodels: for using it, and for creating extensions following our practices
+:::
+
+<!-- Long version of "you extend": rendered as an alternative -------------------- -->
+
 ## You extend: developer articles
 
-[![](images/tidymodels-learn-developer-tools.png){height="500" fig-align="center"}](https://www.tidymodels.org/learn/#category=developer%20tools)
+[![](images/tidymodels-learn-developer-tools.png){height="500" fig-align="center" fig-alt="The Learn page on tidymodels.org with the developer tools category highlighted, listing articles such as creating your own broom tidier methods, recipe step function, and score class object."}](https://www.tidymodels.org/learn/#category=developer%20tools)
 
 [<https://www.tidymodels.org/learn/#category=developer%20tools>]{style="font-size: 0.6em"}
 
@@ -620,6 +664,8 @@ final_fit |>
 ::: {.notes}
 - Claude Code skills for tidymodels: for using it, and for creating extensions following our practices
 :::
+
+<!-- End of the long version of "you extend" ------------------------------ -->
 
 ## Something missing? Ask us!
 
@@ -678,6 +724,7 @@ workflow(projects_rec, cox_spec) |>
 
 ## Durations with unfinished cases?
 
+- Project openings, business closures, unemployment spells, fieldwork response, ...
 - Censored regression in tidymodels works just like classification or regression
 - If something is missing, you can extend the framework, or ask us
 
